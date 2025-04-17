@@ -49,4 +49,39 @@ public class AccountController : Controller
         ModelState.AddModelError("", "Falha ao realizar o login!");
         return View(loginVW);
     }
+
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(LoginViewModel registroVW)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = new IdentityUser { UserName = registroVW.UserName };
+            var result = await _userManager.CreateAsync(user, registroVW.Password);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            else
+            {
+                this.ModelState.AddModelError("Registro", "Falha ao resgistrar o usuário");
+            }
+        }
+        return View(registroVW);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        HttpContext.Session.Clear();
+        HttpContext.User = null;
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index", "Home");
+    }
 }
